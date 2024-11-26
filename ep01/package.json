@@ -20,5 +20,14 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
-  }
+  },
+  "main": "App.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ch3hak/react.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ch3hak/react/issues"
+  },
+  "homepage": "https://github.com/ch3hak/react#readme"
 }
