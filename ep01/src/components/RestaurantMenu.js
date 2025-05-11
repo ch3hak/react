@@ -15,14 +15,13 @@ const RestaurantMenu = () => {
         const json = await data.json();
         setResInfo(json.data);
     };
-
-    if (resInfo === null) return <Shimmer />;
     
+    if (resInfo === null) return <Shimmer />;
 
     const { name = "", costForTwoMessage = "", cuisines = [] } = resInfo?.cards?.[2]?.card?.card?.info || {};
 
-    const restaurantCards = resInfo?.cards[2]?.card?.card?.gridElements?.infoWithStyle?.restaurants?.filter(
-        (c) => c["@type"] === "type.googleapis.com/swiggy.presentation.food.v2.Restaurant"
+    const restaurantCards = resInfo?.cards[5]?.groupedCard?.cardGroupMap?.REGULAR?.cards[1]?.card?.card?.itemCards?.filter(
+        (c) => c.card?.["@type"] === "type.googleapis.com/swiggy.presentation.food.v2.Dish"
     );
       
     return (
@@ -31,18 +30,19 @@ const RestaurantMenu = () => {
             <p>{cuisines?.join(", ")} - {costForTwoMessage}</p>
             <h2>Menu</h2>
             <ul>
-                <li>Biryani</li>
-                <li>Burgers</li>
-                <li>Diet Coke</li>
+                {restaurantCards.map((item)=>(
+                    <li>{item?.card?.info?.name}</li>
+                ))}
             </ul>
-            {restaurantCards?.map((restaurant, index) => (
-            <RestaurantCard
-              key={restaurant.info.id}
-              data={restaurant.info}
-            />
-        ))}
+  
         </div>
     );
+    // {restaurantCards?.map((restaurant, index) => (
+    //     <RestaurantCard
+    //     key={restaurant.info.id}
+    //     data={restaurant.info}
+    //     />
+    // ))}
 
 };
 
