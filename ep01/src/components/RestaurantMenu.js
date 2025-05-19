@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
 import Shimmer from "./Shimmer";
+import { useParams } from "react-router";
+import { MENU_API } from "../utils/constants";
 
 const RestaurantMenu = () => {
     const [resInfo, setResInfo] = useState(null);
+
+    const {resId} = useParams();
 
     useEffect(() => {
         fetchMenu();
     }, []);
 
     const fetchMenu = async () => {
-        const data = await fetch(
-            "https://www.swiggy.com/mapi/menu/pl?page-type=REGULAR_MENU&complete-menu=true&lat=28.7384023&lng=77.13000009999999&restaurantId=581970&submitAction=ENTER"
-        );
+        const data = await fetch(MENU_API+resId);
         const json = await data.json();
         setResInfo(json.data);
     };
@@ -20,9 +22,14 @@ const RestaurantMenu = () => {
 
     const { name = "", costForTwoMessage = "", cuisines = [] } = resInfo?.cards?.[2]?.card?.card?.info || {};
 
-    const restaurantCards = resInfo?.cards[5]?.groupedCard?.cardGroupMap?.REGULAR?.cards[1]?.card?.card?.itemCards?.filter(
+    const recommendedSection = resInfo?.cards?.[5]?.groupedCard?.cardGroupMap?.REGULAR?.cards?.find(
+        (c) => c.card?.card?.title === "Recommended"
+    );
+    
+    const restaurantCards = recommendedSection?.card?.card?.itemCards?.filter(
         (c) => c.card?.["@type"] === "type.googleapis.com/swiggy.presentation.food.v2.Dish"
     );
+    
       
     return (
         <div className="menu">
@@ -30,8 +37,11 @@ const RestaurantMenu = () => {
             <p>{cuisines?.join(", ")} - {costForTwoMessage}</p>
             <h2>Menu</h2>
             <ul>
-                {restaurantCards.map((item)=>(
-                    <li>{item?.card?.info?.name}</li>
+                {restaurantCards?.map((item)=>(
+                    <li key={item?.card?.info?.id}>
+                        {item?.card?.info?.name} - {"Rs."} 
+                        {item?.card?.info?.defaultPrice/100 || item?.card?.info?.price/100}
+                    </li>
                 ))}
             </ul>
   
