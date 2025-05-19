@@ -5,7 +5,6 @@ import { MENU_API } from "../utils/constants";
 
 const RestaurantMenu = () => {
     const [resInfo, setResInfo] = useState(null);
-
     const {resId} = useParams();
 
     useEffect(() => {
@@ -22,14 +21,40 @@ const RestaurantMenu = () => {
 
     const { name = "", costForTwoMessage = "", cuisines = [] } = resInfo?.cards?.[2]?.card?.card?.info || {};
 
-    const recommendedSection = resInfo?.cards?.[5]?.groupedCard?.cardGroupMap?.REGULAR?.cards?.find(
-        (c) => c.card?.card?.title === "Recommended"
+    const regularCards =
+    resInfo?.cards?.[5]?.groupedCard?.cardGroupMap?.REGULAR?.cards || [];
+
+    const recCard = regularCards.find(
+        (c) => c.card?.card?.title?.trim() === "Recommended"
     );
-    
-    const restaurantCards = recommendedSection?.card?.card?.itemCards?.filter(
-        (c) => c.card?.["@type"] === "type.googleapis.com/swiggy.presentation.food.v2.Dish"
+
+    const topCard = !recCard && regularCards.find(
+        (c) => c.card?.card?.title?.trim() === "Top Picks"
     );
-    
+
+    const thirdCard = !recCard && !topCard && regularCards[1];
+
+    const section = recCard
+    ? recCard.card.card
+    : topCard
+    ? topCard.card.card
+    : thirdCard
+    ? thirdCard.card.card
+    : null;
+
+    let restaurantCards = [];
+    if (section?.itemCards) {
+    restaurantCards = section.itemCards.filter(
+    (c) =>
+        c.card?.["@type"] ===
+        "type.googleapis.com/swiggy.presentation.food.v2.Dish"
+    );
+    } else if (section?.carousel) {
+        restaurantCards = section.carousel.map((c) => ({
+            card: { info: c.dish.info },
+        }));
+    }
+
       
     return (
         <div className="menu">
@@ -37,14 +62,16 @@ const RestaurantMenu = () => {
             <p>{cuisines?.join(", ")} - {costForTwoMessage}</p>
             <h2>Menu</h2>
             <ul>
-                {restaurantCards?.map((item)=>(
-                    <li key={item?.card?.info?.id}>
-                        {item?.card?.info?.name} - {"Rs."} 
-                        {item?.card?.info?.defaultPrice/100 || item?.card?.info?.price/100}
+                {restaurantCards.map((item) => (
+                    <li key={item.card.info.id}>
+                        {item.card.info.name} — Rs.
+                        {(
+                            (item.card.info.defaultPrice ?? item.card.info.price) /
+                            100
+                        ).toFixed(2)}
                     </li>
                 ))}
             </ul>
-  
         </div>
     );
     // {restaurantCards?.map((restaurant, index) => (
